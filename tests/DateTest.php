@@ -1,0 +1,161 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Flying\Date\Tests;
+
+use Flying\Date\Date;
+use PHPUnit\Framework\TestCase;
+
+class DateTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        Date::allowAdjustment(true);
+        Date::adjust();
+        Date::setTimezone();
+        $this->ensureStartOfTheSecond();
+    }
+
+    public function testDefaultTimezoneIsUsedIfNotDefinedExplicitly(): void
+    {
+        self::assertEquals(date_default_timezone_get(), Date::getTimezone()->getName());
+
+        $timezone = $this->getNonDefaultTimezone();
+        Date::setTimezone($timezone);
+        self::assertNotEquals(date_default_timezone_get(), Date::getTimezone()->getName());
+        self::assertEquals($timezone, Date::getTimezone());
+
+        Date::setTimezone();
+        self::assertEquals(date_default_timezone_get(), Date::getTimezone()->getName());
+    }
+
+    public function testNowReturnsCurrentDate(): void
+    {
+        $now = Date::now();
+        self::assertDateEquals(new \DateTimeImmutable(), $now);
+        self::assertEquals($this->getDefaultTimezone(), $now->getTimezone());
+
+        Date::setTimezone($this->getNonDefaultTimezone());
+        $now = Date::now();
+        self::assertDateEquals(new \DateTimeImmutable(), $now);
+        self::assertEquals($this->getNonDefaultTimezone(), $now->getTimezone());
+    }
+
+    public function testCreatingDatesFromDifferentFormats(): void
+    {
+        $reference = $this->getReferenceDate();
+
+        $date = Date::from($reference);
+        self::assertNotSame($reference, $date);
+        self::assertDateEquals($reference, $date);
+
+        $interval = Date::now()->diff($reference);
+        $date = Date::from($interval);
+        self::assertNotSame($reference, $date);
+        self::assertDateEquals($reference, $date);
+
+        $date = Date::from($reference->format(\DateTimeInterface::ATOM));
+        self::assertNotSame($reference, $date);
+        self::assertDateEquals($reference, $date);
+
+        $date = Date::from('2022-08-01');
+        self::assertEquals('2022-08-01', $date->format('Y-m-d'));
+    }
+
+    public function testDefaultTimezoneIsUsedUnlessPassedExplicitly(): void
+    {
+        $reference = $this->getReferenceDate();
+
+        $date = Date::from($reference);
+        self::assertEquals($this->getDefaultTimezone(), $date->getTimezone());
+
+        Date::setTimezone($this->getNonDefaultTimezone());
+        $date = Date::from($reference);
+        self::assertEquals($this->getNonDefaultTimezone(), $date->getTimezone());
+
+        Date::setTimezone();
+        $date = Date::from($reference);
+        self::assertEquals($this->getDefaultTimezone(), $date->getTimezone());
+
+        $timezone = $this->getNonDefaultTimezone();
+        $date = Date::from($reference, $timezone);
+        self::assertEquals($timezone, $date->getTimezone());
+    }
+
+    public function testDateAdjustmentAppliesToDateGeneratorMethods(): void
+    {
+        $reference = $this->getReferenceDate();
+        $diff = (new \DateTimeImmutable())->diff($reference);
+
+        Date::adjust($reference);
+        $now = Date::now();
+        self::assertNotSame($reference, $now);
+        self::assertDateEquals($reference, $now);
+        self::assertDateNotEquals(new \DateTimeImmutable(), $now);
+        self::assertDateEquals((new \DateTimeImmutable())->add($diff), $now);
+
+        $interval = new \DateInterval('P1DT2H3M4S');
+        Date::adjust($interval);
+        $now = Date::now();
+        self::assertDateNotEquals(new \DateTimeImmutable(), $now);
+        self::assertDateEquals((new \DateTimeImmutable())->add($interval), $now);
+
+        Date::adjust();
+        $now = Date::now();
+        self::assertDateEquals(new \DateTimeImmutable(), $now);
+    }
+
+    public function testDateAdjustmentsIsOnlyAllowedWhenExplicitlyEnabled(): void
+    {
+        $reference = $this->getReferenceDate();
+
+        Date::allowAdjustment(true);
+        Date::adjust($reference);
+        $now = Date::now();
+        self::assertDateEquals($reference, $now);
+
+        $status = Date::allowAdjustment(false);
+        self::assertTrue($status);
+        $this->expectException(\RuntimeException::class);
+        Date::adjust($reference);
+    }
+
+    private function ensureStartOfTheSecond(): void
+    {
+        do {
+            $now = microtime(true);
+            $micro = ($now - floor($now)) * 1_000_000;
+            if ($micro < 10_000) {
+                return;
+            }
+            usleep(10_000);
+        } while ($micro > 10_000);
+    }
+
+    private function getReferenceDate(): \DateTimeImmutable
+    {
+        return \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, '2022-08-01T12:23:34Z', $this->getDefaultTimezone());
+    }
+
+    private function getDefaultTimezone(): \DateTimeZone
+    {
+        return new \DateTimeZone(date_default_timezone_get());
+    }
+
+    private function getNonDefaultTimezone(): \DateTimeZone
+    {
+        $timezone = date_default_timezone_get() !== 'UTC' ? 'UTC' : 'Europe/Moscow';
+        return new \DateTimeZone($timezone);
+    }
+
+    private static function assertDateEquals(\DateTimeInterface $expected, \DateTimeInterface $actual): void
+    {
+        self::assertEquals($expected->getTimestamp(), $actual->getTimestamp());
+    }
+
+    private static function assertDateNotEquals(\DateTimeInterface $expected, \DateTimeInterface $actual): void
+    {
+        self::assertNotEquals($expected->getTimestamp(), $actual->getTimestamp());
+    }
+}
