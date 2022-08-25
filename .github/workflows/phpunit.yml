@@ -39,7 +39,7 @@ jobs:
                     tools: composer:v2
 
             -   name: Install dependencies with Composer
-                run: ./tools/composer update --no-ansi --no-interaction --no-progress
+                run: composer update --no-ansi --no-interaction --no-progress
 
             -   name: Run tests
                 run: ./vendor/bin/phpunit
@@ -61,7 +61,7 @@ jobs:
                     tools: composer:v2
 
             -   name: Install dependencies with Composer
-                run: ./tools/composer update --no-ansi --no-interaction --no-progress
+                run: composer update --no-ansi --no-interaction --no-progress
 
             -   name: Collect code coverage with phpunit
                 run: ./vendor/bin/phpunit --coverage-clover=coverage.xml
