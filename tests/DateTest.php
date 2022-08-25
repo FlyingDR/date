@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Flying\Date\Tests;
 
 use Flying\Date\Date;
+use Flying\Date\PHPUnit\Attribute\AdjustableDate;
 use PHPUnit\Framework\TestCase;
 
+#[AdjustableDate]
 class DateTest extends TestCase
 {
     protected function setUp(): void
     {
-        Date::allowAdjustment(true);
-        Date::adjust();
-        Date::setTimezone();
         $this->ensureStartOfTheSecond();
     }
 
