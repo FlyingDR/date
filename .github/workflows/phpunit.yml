@@ -1,0 +1,72 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+on:
+    push:
+    pull_request:
+
+name: PHPUnit
+
+permissions:
+    contents: read
+
+jobs:
+    unit-tests:
+        name: Unit Tests
+
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - php: '8.0'
+                    - php: '8.1'
+                    - php: '8.2'
+
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+
+            -   name: Configure for PHP >= 8.2
+                if: "matrix.php >= '8.2'"
+                run: |
+                    composer config platform.php 8.1.99
+
+            -   name: Install PHP with extensions
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    tools: none
+
+            -   name: Install dependencies with Composer
+                run: ./tools/composer update --no-ansi --no-interaction --no-progress
+
+            -   name: Run tests
+                run: ./phpunit
+
+    code-coverage:
+        name: Code Coverage
+
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+
+            -   name: Install PHP with extensions
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: 8.1
+                    coverage: pcov
+                    tools: none
+
+            -   name: Install dependencies with Composer
+                run: ./tools/composer update --no-ansi --no-interaction --no-progress
+
+            -   name: Collect code coverage with phpunit
+                run: ./phpunit --coverage-clover=coverage.xml
+
+            -   name: Send code coverage report to Codecov.io
+                uses: codecov/codecov-action@v2
+                with:
+                    token: ${{ secrets.CODECOV_TOKEN }}
