@@ -6,11 +6,14 @@ namespace Flying\Date\Tests;
 
 use Flying\Date\Date;
 use Flying\Date\PHPUnit\Attribute\AdjustableDate;
+use Flying\Date\PHPUnit\Helper\EnsureStartOfTheSecondTrait;
 use PHPUnit\Framework\TestCase;
 
 #[AdjustableDate]
 class DateTest extends TestCase
 {
+    use EnsureStartOfTheSecondTrait;
+
     protected function setUp(): void
     {
         $this->ensureStartOfTheSecond();
@@ -126,18 +129,6 @@ class DateTest extends TestCase
         Date::adjust($reference);
         $now = Date::now();
         self::assertDateEquals(new \DateTimeImmutable(), $now);
-    }
-
-    private function ensureStartOfTheSecond(): void
-    {
-        do {
-            $now = microtime(true);
-            $micro = ($now - floor($now)) * 1_000_000;
-            if ($micro < 10_000) {
-                return;
-            }
-            usleep(10_000);
-        } while ($micro > 10_000);
     }
 
     private function getReferenceDate(): \DateTimeImmutable
