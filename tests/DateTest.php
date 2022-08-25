@@ -61,6 +61,10 @@ class DateTest extends TestCase
 
         $date = Date::from('2022-08-01');
         self::assertEquals('2022-08-01', $date->format('Y-m-d'));
+
+        $date = Date::from('+3 weeks');
+        $expected = (new \DateTimeImmutable())->add(new \DateInterval('P3W'))->format('Y-m-d');
+        self::assertEquals($expected, $date->format('Y-m-d'));
     }
 
     public function testDefaultTimezoneIsUsedUnlessPassedExplicitly(): void
@@ -97,11 +101,13 @@ class DateTest extends TestCase
 
         $interval = new \DateInterval('P1DT2H3M4S');
         Date::adjust($interval);
+        self::assertEquals($interval, Date::getAdjustment());
         $now = Date::now();
         self::assertDateNotEquals(new \DateTimeImmutable(), $now);
         self::assertDateEquals((new \DateTimeImmutable())->add($interval), $now);
 
         Date::adjust();
+        self::assertNull(Date::getAdjustment());
         $now = Date::now();
         self::assertDateEquals(new \DateTimeImmutable(), $now);
     }
@@ -115,10 +121,12 @@ class DateTest extends TestCase
         $now = Date::now();
         self::assertDateEquals($reference, $now);
 
-        $status = Date::allowAdjustment(false);
-        self::assertTrue($status);
-        $this->expectException(\RuntimeException::class);
+        self::assertTrue(Date::isAdjustmentAllowed());
+        Date::allowAdjustment(false);
+        self::assertFalse(Date::isAdjustmentAllowed());
         Date::adjust($reference);
+        $now = Date::now();
+        self::assertDateEquals(new \DateTimeImmutable(), $now);
     }
 
     private function ensureStartOfTheSecond(): void

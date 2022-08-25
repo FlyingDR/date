@@ -11,11 +11,11 @@ namespace Flying\Date;
 final class Date
 {
     private static bool $adjustmentAllowed = false;
-    private static ?\DateInterval $shift = null;
+    private static ?\DateInterval $adjustment = null;
     private static ?\DateTimeZone $timezone = null;
 
     /**
-     * Get current time
+     * Get current DateTime
      */
     public static function now(): \DateTimeImmutable
     {
@@ -34,17 +34,26 @@ final class Date
             is_string($date) => new \DateTimeImmutable($date),
         };
         $now = $now->setTimezone($timezone ?? self::getTimezone());
-        if (self::$shift !== null) {
-            // It is necessary to remove microseconds
-            $ms = new \DateInterval('PT0S');
-            $ms->f = (float)('0.' . $now->format('u'));
-            $now = $now->add(self::$shift)->sub($ms);
+        if (self::isAdjustmentAllowed()) {
+            $adjustment = self::getAdjustment();
+            if ($adjustment) {
+                /**
+                 * Apply date adjustment, but remove microseconds.
+                 *
+                 * Reasons for it are explained in the comment of the "adjust" method.
+                 *
+                 * @see adjust()
+                 */
+                $ms = new \DateInterval('PT0S');
+                $ms->f = (float)('0.' . $now->format('u'));
+                $now = $now->add($adjustment)->sub($ms);
+            }
         }
         return $now;
     }
 
     /**
-     * Get current timezone that is used for creating dates
+     * Get timezone to use for creating dates
      */
     public static function getTimezone(): \DateTimeZone
     {
@@ -60,33 +69,53 @@ final class Date
     }
 
     /**
-     * Adjust current time to given new "now" time or to given time shift
+     * Adjust current date by given time shift
      *
      * IMPORTANT: Date adjustments should only be used in tests, not in real code!
      */
     public static function adjust(\DateInterval|\DateTimeInterface|null $now = null): void
     {
-        if (!self::$adjustmentAllowed) {
-            throw new \RuntimeException('Date adjustments is not allowed');
-        }
         if ($now instanceof \DateTimeInterface) {
-            self::$shift = (new \DateTimeImmutable())->diff($now);
-            self::$shift->f = 0;
+            self::$adjustment = (new \DateTimeImmutable())->diff($now);
         } else {
-            self::$shift = $now;
+            self::$adjustment = $now;
+        }
+        if (self::$adjustment) {
+            /**
+             * Strip microseconds part of the date adjustment interval.
+             *
+             * It should be safe because testing time shifts with microseconds precision on intervals
+             * less than a second is more reliable with use of the usleep() and for larger intervals
+             * microseconds include may introduce difference of the whole second which may cause tests
+             * to break from time to time.
+             */
+            self::$adjustment->f = 0;
         }
     }
 
     /**
-     * Update time adjustment allowing status.
-     * Returns previous status.
+     * Get currently defined date adjustment
+     */
+    public static function getAdjustment(): ?\DateInterval
+    {
+        return self::$adjustment;
+    }
+
+    /**
+     * Update date adjustment allowing status
      *
      * IMPORTANT: Date adjustments should only be used in tests, not in real code!
      */
-    public static function allowAdjustment(bool $status): bool
+    public static function allowAdjustment(bool $status): void
     {
-        $current = self::$adjustmentAllowed;
         self::$adjustmentAllowed = $status;
-        return $current;
+    }
+
+    /**
+     * Check if date adjustment is allowed
+     */
+    public static function isAdjustmentAllowed(): bool
+    {
+        return self::$adjustmentAllowed;
     }
 }
