@@ -21,15 +21,16 @@ class DateTest extends TestCase
 
     public function testDefaultTimezoneIsUsedIfNotDefinedExplicitly(): void
     {
-        self::assertEquals(date_default_timezone_get(), Date::getTimezone()->getName());
+        $default = date_default_timezone_get();
+        self::assertEquals($default, Date::getTimezone()->getName());
 
         $timezone = $this->getNonDefaultTimezone();
         Date::setTimezone($timezone);
-        self::assertNotEquals(date_default_timezone_get(), Date::getTimezone()->getName());
+        self::assertNotEquals($default, Date::getTimezone()->getName());
         self::assertEquals($timezone, Date::getTimezone());
 
         Date::setTimezone();
-        self::assertEquals(date_default_timezone_get(), Date::getTimezone()->getName());
+        self::assertEquals($default, Date::getTimezone()->getName());
     }
 
     public function testNowReturnsCurrentDate(): void
@@ -80,12 +81,20 @@ class DateTest extends TestCase
         $date = Date::from($reference);
         self::assertEquals($this->getNonDefaultTimezone(), $date->getTimezone());
 
+        Date::setTimezone($this->getDefaultTimezone()->getName());
+        $date = Date::from($reference);
+        self::assertEquals($this->getDefaultTimezone(), $date->getTimezone());
+
         Date::setTimezone();
         $date = Date::from($reference);
         self::assertEquals($this->getDefaultTimezone(), $date->getTimezone());
 
         $timezone = $this->getNonDefaultTimezone();
         $date = Date::from($reference, $timezone);
+        self::assertEquals($timezone, $date->getTimezone());
+
+        $timezone = $this->getNonDefaultTimezone();
+        $date = Date::from($reference, $timezone->getName());
         self::assertEquals($timezone, $date->getTimezone());
     }
 

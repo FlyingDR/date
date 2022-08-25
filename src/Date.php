@@ -25,7 +25,7 @@ final class Date
     /**
      * Create DateTime object from given information
      */
-    public static function from(\DateTimeInterface|\DateInterval|string $date, ?\DateTimeZone $timezone = null): \DateTimeImmutable
+    public static function from(\DateTimeInterface|\DateInterval|string $date, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         $now = match (true) {
@@ -33,6 +33,9 @@ final class Date
             $date instanceof \DateInterval => (new \DateTimeImmutable())->add($date),
             is_string($date) => new \DateTimeImmutable($date),
         };
+        if (is_string($timezone)) {
+            $timezone = new \DateTimeZone($timezone);
+        }
         $now = $now->setTimezone($timezone ?? self::getTimezone());
         if (self::isAdjustmentAllowed()) {
             $adjustment = self::getAdjustment();
@@ -63,8 +66,11 @@ final class Date
     /**
      * Set default timezone
      */
-    public static function setTimezone(?\DateTimeZone $timezone = null): void
+    public static function setTimezone(\DateTimeZone|string|null $timezone = null): void
     {
+        if (is_string($timezone)) {
+            $timezone = new \DateTimeZone($timezone);
+        }
         self::$timezone = $timezone;
     }
 
