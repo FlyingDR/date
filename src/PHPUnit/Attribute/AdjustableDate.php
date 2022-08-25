@@ -8,7 +8,7 @@ namespace Flying\Date\PHPUnit\Attribute;
  * Attribute to use for test classes to automatically configure
  * date adjustment for them
  */
-#[\Attribute(\Attribute::TARGET_CLASS)]
+#[\Attribute(\Attribute::TARGET_CLASS|\Attribute::TARGET_METHOD)]
 final class AdjustableDate
 {
     private bool $enabled;

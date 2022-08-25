@@ -9,7 +9,6 @@ use Flying\Date\PHPUnit\Attribute\AdjustableDate;
 use Flying\Date\PHPUnit\Helper\EnsureStartOfTheSecondTrait;
 use PHPUnit\Framework\TestCase;
 
-#[AdjustableDate]
 class DateTest extends TestCase
 {
     use EnsureStartOfTheSecondTrait;
@@ -98,6 +97,7 @@ class DateTest extends TestCase
         self::assertEquals($timezone, $date->getTimezone());
     }
 
+    #[AdjustableDate]
     public function testDateAdjustmentAppliesToDateGeneratorMethods(): void
     {
         $reference = $this->getReferenceDate();
@@ -123,6 +123,7 @@ class DateTest extends TestCase
         self::assertDateEquals(new \DateTimeImmutable(), $now);
     }
 
+    #[AdjustableDate]
     public function testDateAdjustmentsIsOnlyAllowedWhenExplicitlyEnabled(): void
     {
         $reference = $this->getReferenceDate();

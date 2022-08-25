@@ -19,14 +19,25 @@ class AdjustableDateListener implements TestListener
 
     public function startTest(Test $test): void
     {
-        if (!array_key_exists($test::class, $this->cache)) {
-            $attributes = (new \ReflectionObject($test))->getAttributes(AdjustableDate::class);
-            $attribute = array_shift($attributes);
-            $this->cache[$test::class] = $attribute?->newInstance();
+        $reflection = null;
+        $classKey = $test::class;
+        if (!array_key_exists($classKey, $this->cache)) {
+            $reflection ??= new \ReflectionObject($test);
+            $ar = $reflection->getAttributes(AdjustableDate::class)[0] ?? null;
+            $this->cache[$classKey] = $ar?->newInstance();
         }
-        $attribute = $this->cache[$test::class];
-        Date::allowAdjustment(($attribute?->isEnabled()) ?? false);
-        Date::setTimezone(($attribute?->getTimezone()) ?? null);
+        $methodKey = $test::class . '::' . $test->getName();
+        if (!array_key_exists($methodKey, $this->cache)) {
+            $reflection ??= new \ReflectionObject($test);
+            $ar = null;
+            $method = $test->getName();
+            if ($reflection->hasMethod($method)) {
+                $ar = $reflection->getMethod($method)->getAttributes(AdjustableDate::class)[0] ?? null;
+            }
+            $this->cache[$methodKey] = $ar?->newInstance();
+        }
+        Date::allowAdjustment($this->cache[$methodKey]?->isEnabled() ?? $this->cache[$classKey]?->isEnabled() ?? false);
+        Date::setTimezone($this->cache[$methodKey]?->getTimezone() ?? $this->cache[$classKey]?->getTimezone() ?? null);
         Date::adjust();
     }
 
