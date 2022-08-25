@@ -27,16 +27,17 @@ final class Date
      */
     public static function from(\DateTimeInterface|\DateInterval|string $date, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable
     {
+        $timezone = match (true) {
+            $timezone instanceof \DateTimeZone => $timezone,
+            is_string($timezone) => new \DateTimeZone($timezone),
+            default => self::getTimezone(),
+        };
         /** @noinspection PhpUnhandledExceptionInspection */
         $now = match (true) {
-            $date instanceof \DateTimeInterface => \DateTimeImmutable::createFromInterface($date),
-            $date instanceof \DateInterval => (new \DateTimeImmutable())->add($date),
-            is_string($date) => new \DateTimeImmutable($date),
+            $date instanceof \DateTimeInterface => new \DateTimeImmutable($date->setTimezone($timezone)->format('Y-m-d\TH:i:s'), $timezone),
+            $date instanceof \DateInterval => (new \DateTimeImmutable('now', $timezone))->add($date),
+            is_string($date) => new \DateTimeImmutable($date, $timezone),
         };
-        if (is_string($timezone)) {
-            $timezone = new \DateTimeZone($timezone);
-        }
-        $now = $now->setTimezone($timezone ?? self::getTimezone());
         if (self::isAdjustmentAllowed()) {
             $adjustment = self::getAdjustment();
             if ($adjustment) {

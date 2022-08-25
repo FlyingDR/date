@@ -69,6 +69,28 @@ class DateTest extends TestCase
         self::assertEquals($expected, $date->format('Y-m-d'));
     }
 
+    /**
+     * @throws \Exception
+     */
+    public function testTimezoneAppliesAtTheTimeOfDateCreation(): void
+    {
+        $date = '2022-08-01T12:23:34Z';
+        $tz1 = $this->getDefaultTimezone();
+        $tz2 = $this->getNonDefaultTimezone();
+
+        Date::setTimezone($tz1);
+        self::assertEquals(
+            Date::from($date)->format(\DateTimeInterface::ATOM),
+            (new \DateTimeImmutable($date, $tz1))->format(\DateTimeInterface::ATOM),
+        );
+
+        Date::setTimezone($tz2);
+        self::assertEquals(
+            Date::from($date)->format(\DateTimeInterface::ATOM),
+            (new \DateTimeImmutable($date, $tz2))->format(\DateTimeInterface::ATOM),
+        );
+    }
+
     public function testDefaultTimezoneIsUsedUnlessPassedExplicitly(): void
     {
         $reference = $this->getReferenceDate();
