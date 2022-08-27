@@ -119,11 +119,67 @@ class DateTest extends TestCase
         self::assertEquals($timezone, $date->getTimezone());
     }
 
+    /**
+     * @dataProvider dpDatesFromFormatWithoutTimezone
+     */
+    public function testDatesFromFormatWithoutTimezone(string $format, string $datetime): void
+    {
+        $created = Date::fromFormat($format, $datetime);
+        self::assertEquals($datetime, $created->format($format));
+    }
+
+    public function dpDatesFromFormatWithoutTimezone(): array
+    {
+        return [
+            ['Y-m-d', '2022-08-01'],
+            ['Y-m-d H:i:s', '2022-08-01 12:23:34'],
+        ];
+    }
+
+    /**
+     * @dataProvider dpDatesFromFormatWithEmbeddedTimezone
+     */
+    public function testDatesFromFormatWithEmbeddedTimezone(string $format, string $datetime, \DateTimeZone $timezone): void
+    {
+        $created = Date::fromFormat($format, $datetime, $timezone);
+        self::assertEquals($datetime, $created->format($format));
+        self::assertEquals($timezone, $created->getTimezone());
+    }
+
+    public function dpDatesFromFormatWithEmbeddedTimezone(): array
+    {
+        return [
+            [\DateTimeInterface::ATOM, '2022-08-01T12:23:34-05:00',new \DateTimeZone('-05:00')],
+            [\DateTimeInterface::ATOM, '2022-08-01T12:23:34+03:00', new \DateTimeZone('+03:00')],
+        ];
+    }
+
+    /**
+     * @dataProvider dpDatesFromFormatWithExplicitlyGivenTimezone
+     */
+    public function testDatesFromFormatWithExplicitlyGivenTimezone(string $format, string $datetime, \DateTimeZone $timezone): void
+    {
+        $created = Date::fromFormat($format, $datetime, $timezone);
+        self::assertEquals(\DateTimeImmutable::createFromFormat($format, $datetime, $timezone), $created);
+        self::assertEquals($timezone, $created->getTimezone());
+    }
+
+    public function dpDatesFromFormatWithExplicitlyGivenTimezone(): array
+    {
+        return [
+            ['Y-m-d H:i:s', '2022-08-01 12:23:34', $this->getDefaultTimezone()],
+            ['Y-m-d H:i:s', '2022-08-01 12:23:34', $this->getNonDefaultTimezone()],
+            [\DateTimeInterface::ATOM, '2022-08-01T12:23:34Z', new \DateTimeZone('America/New_York')],
+            [\DateTimeInterface::ATOM, '2022-08-01T12:23:34+03:00', new \DateTimeZone('Asia/Singapore')],
+        ];
+    }
+
     #[AdjustableDate]
-    public function testDateAdjustmentAppliesToDateGeneratorMethods(): void
+    public function testDateAdjustmentAppliesToPrimaryDateGeneratorMethod(): void
     {
         $reference = $this->getReferenceDate();
         $diff = (new \DateTimeImmutable())->diff($reference);
+        $diff->f = 0;
 
         Date::adjust($reference);
         $now = Date::now();
@@ -131,6 +187,10 @@ class DateTest extends TestCase
         self::assertDateEquals($reference, $now);
         self::assertDateNotEquals(new \DateTimeImmutable(), $now);
         self::assertDateEquals((new \DateTimeImmutable())->add($diff), $now);
+        $date = Date::from($reference);
+        self::assertDateEquals($reference->add($diff), $date);
+        $date = Date::fromFormat(\DateTimeInterface::ATOM, $reference->format(\DateTimeInterface::ATOM));
+        self::assertDateEquals($reference->add($diff), $date);
 
         $interval = new \DateInterval('P1DT2H3M4S');
         Date::adjust($interval);
@@ -138,11 +198,19 @@ class DateTest extends TestCase
         $now = Date::now();
         self::assertDateNotEquals(new \DateTimeImmutable(), $now);
         self::assertDateEquals((new \DateTimeImmutable())->add($interval), $now);
+        $date = Date::from($reference);
+        self::assertDateEquals($reference->add($interval), $date);
+        $date = Date::fromFormat(\DateTimeInterface::ATOM, $reference->format(\DateTimeInterface::ATOM));
+        self::assertDateEquals($reference->add($interval), $date);
 
         Date::adjust();
         self::assertNull(Date::getAdjustment());
         $now = Date::now();
         self::assertDateEquals(new \DateTimeImmutable(), $now);
+        $date = Date::from($reference);
+        self::assertDateEquals($reference, $date);
+        $date = Date::fromFormat(\DateTimeInterface::ATOM, $reference->format(\DateTimeInterface::ATOM));
+        self::assertDateEquals($reference, $date);
     }
 
     #[AdjustableDate]

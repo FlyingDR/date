@@ -24,32 +24,30 @@ Main API methods - [`now`](#now) and [`from`](#from) returning `\DateTimeImmutab
 
 ## Usage in application
 
-In order to benefit from the ability to use time shifting it is required to update parts of your code which creates new instances of the `\DateTime`
-or `\DateTimeInterval` objects.
+In order to benefit from the ability to use time shifting it is required to update parts of your code which creates new instances of the `\DateTime` or `\DateTimeInterval` objects.
+
+To get `\DateTime` object it is required to convert obtained `\DateTimeInterval` object:
+
+```php
+$mutableDateTime = \DateTime::createFromImmutable($immutableDateTime); 
+```
 
 ### Creating objects for current time and default timezone
-
-#### For `\DateTimeImmutable`:
 
 - Before: `new \DateTimeImmutable()`
 - After: `\Flying\Date\Date::now()`
 
-#### For `\DateTime`:
-
-- Before: `new \DateTime()`
-- After: `\DateTime::createFromImmutable(\Flying\Date\Date::now())`
-
 ### Creating objects for arbitrary time and / or timezone
 
-#### For `\DateTimeImmutable`:
+#### Creating from string
 
 - Before: `new \DateTimeImmutable('2022-08-01', new \DateTimeZone('UTC'))`
 - After: `\Flying\Date\Date::from('2022-08-01', 'UTC')`
 
-#### For `\DateTime`:
+#### Creating from format
 
-- Before: `new \DateTime('2022-08-01', new \DateTimeZone('UTC'))`
-- After: `\DateTime::createFromImmutable(\Flying\Date\Date::from('2022-08-01', 'UTC'))`
+- Before: `\DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, 2022-08-01T12:23:34Z')`
+- After: `\Flying\Date\Date::fromFormat(\DateTimeInterface::ATOM, '2022-08-01T12:23:34Z')`
 
 ## Usage in tests
 
@@ -111,11 +109,21 @@ Signature:
 \Flying\Date\Date::from(\DateTimeInterface|\DateInterval|string $date, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable
  ```
 
-Creates date object for given arbitrary point of time from provided date and timezone information. Either given timezone, timezone defined
-through [`setTimezone()`](#settimezone) or PHP default timezone is used. It is allowed to pass valid timezone name as timezone value.
+Creates date object for given arbitrary point of time from provided date and timezone information. Either given timezone, timezone defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. It is allowed to pass valid timezone name as timezone value.
 
-In case if date adjustment is enabled - returned date will be adjusted by the
-defined time shifting interval.
+In case if date adjustment is enabled - returned date will be adjusted by the defined time shifting interval.
+
+### `fromFormat`
+
+Signature:
+
+```php
+\Flying\Date\Date::fromFormat(string $format, string $datetime, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable
+```
+
+Creates date object for given date string, formatted using given format using given timezone information. Either given timezone, timezone defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. It is allowed to pass valid timezone name as timezone value.
+
+In case if date adjustment is enabled - returned date will be adjusted by the defined time shifting interval.
 
 ### `getTimezone`
 

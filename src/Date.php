@@ -57,6 +57,14 @@ final class Date
     }
 
     /**
+     * Create DateTime object from given formatted string
+     */
+    public static function fromFormat(string $format, string $datetime, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable
+    {
+        return self::from(\DateTimeImmutable::createFromFormat($format, $datetime, $timezone), $timezone);
+    }
+
+    /**
      * Get timezone to use for creating dates
      */
     public static function getTimezone(): \DateTimeZone
