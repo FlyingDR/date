@@ -1,13 +1,26 @@
 # date
 
-`DateTime` generator with support for adjusting current time. Main purpose is to assist testing application in time-sensitive scenarios without need
-to adjust its code.
+`DateTime` generator with support for adjusting current time. 
 
-Whole API is exposed as a single `\Flying\Date\Date` class. API is provided as a set of static methods to make sure that they will be accessible from
-any part of code without need to introduce any kind of additional dependencies.
+## Purpose 
 
-Main API methods - [`now`](#now) and [`from`](#from) returning `\DateTimeImmutable` instances, whose values can be adjusted relative to the actual
-current time by providing time shifting interval using [`adjust`](#adjust) method.
+Main purpose of the library is to assist testing application in time-sensitive scenarios without need to adjust its code (besides switching to use library itself for creating dates in application). 
+
+It is relatively simple to test time-sensitive scenarios for unit tests, but for functional tests it is much harder. Of course, there is plenty of solutions:
+
+ - [`slope-it/clock-mock`](https://packagist.org/packages/slope-it/clock-mock) looks great, but depends on PHP extension.
+ - [`lcobucci/clock`](https://packagist.org/packages/lcobucci/clock) is very popular, but requires dependency on its own `Clock` object which would require updates of signatures of functions and methods and types of class properties.
+ - [Clock mocking](https://symfony.com/doc/current/components/phpunit_bridge.html#clock-mocking) in Symfony's PHPUnit bridge only mocks time-related functions, not `\DateTimeInterface` based classes.
+
+This library aims to keep amount of required changes at a level, comparable with other solutions. Required [updates for the code](#usage-in-application) are listed below and basically limited to change of `\DateTime` constructor methods into call to static method of the different class. It also simplifies testing cases when code execution took some time and this time change used somehow (think of performance tracking as an example).
+
+## General information
+
+Whole API is exposed as a single `\Flying\Date\Date` class. API is provided as a set of static methods to make sure that they will be accessible from any part of code without need to introduce any kind of additional dependencies.
+
+Generated date objects are limited to `\DateTimeImmutable`. Upcoming `ClockInterface` from [PSR-20](https://github.com/php-fig/fig-standards/blob/master/proposed/clock.md) also provides only immutable dates.
+
+Main API methods - [`now`](#now) and [`from`](#from) returning `\DateTimeImmutable` instances, whose values can be adjusted relative to the actual current time by providing time shifting interval using [`adjust`](#adjust) method.
 
 ## Usage in application
 
@@ -91,10 +104,7 @@ Signature:
 
 Provides date object for the current date. Either timezone, defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. 
 
-In case if date adjustment is
-enabled - returned date will be adjusted by the defined time shifting interval.
-
-It is meant to comply with `ClockInterface` from [PSR-20](https://github.com/php-fig/fig-standards/blob/master/proposed/clock.md).
+In case if date adjustment is enabled - returned date will be adjusted by the defined time shifting interval.
 
 ### `from`
 
