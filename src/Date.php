@@ -59,9 +59,10 @@ final class Date
     /**
      * Create DateTime object from given formatted string
      */
-    public static function fromFormat(string $format, string $datetime, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable
+    public static function fromFormat(string $format, string $datetime, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable|bool
     {
-        return self::from(\DateTimeImmutable::createFromFormat($format, $datetime, $timezone), $timezone);
+        $date = \DateTimeImmutable::createFromFormat($format, $datetime, $timezone);
+        return $date instanceof \DateTimeImmutable ? self::from($date, $timezone) : $date;
     }
 
     /**

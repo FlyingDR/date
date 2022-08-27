@@ -149,7 +149,7 @@ class DateTest extends TestCase
     public function dpDatesFromFormatWithEmbeddedTimezone(): array
     {
         return [
-            [\DateTimeInterface::ATOM, '2022-08-01T12:23:34-05:00',new \DateTimeZone('-05:00')],
+            [\DateTimeInterface::ATOM, '2022-08-01T12:23:34-05:00', new \DateTimeZone('-05:00')],
             [\DateTimeInterface::ATOM, '2022-08-01T12:23:34+03:00', new \DateTimeZone('+03:00')],
         ];
     }
@@ -172,6 +172,12 @@ class DateTest extends TestCase
             [\DateTimeInterface::ATOM, '2022-08-01T12:23:34Z', new \DateTimeZone('America/New_York')],
             [\DateTimeInterface::ATOM, '2022-08-01T12:23:34+03:00', new \DateTimeZone('Asia/Singapore')],
         ];
+    }
+
+    public function testCreatingInvalidDateFromFormat(): void
+    {
+        self::assertFalse(Date::fromFormat('invalid-format', '2022-08-01'));
+        self::assertFalse(Date::fromFormat(\DateTimeInterface::ATOM, 'invalid-date'));
     }
 
     #[AdjustableDate]

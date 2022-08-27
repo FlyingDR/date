@@ -118,7 +118,7 @@ In case if date adjustment is enabled - returned date will be adjusted by the de
 Signature:
 
 ```php
-\Flying\Date\Date::fromFormat(string $format, string $datetime, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable
+\Flying\Date\Date::fromFormat(string $format, string $datetime, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable|bool
 ```
 
 Creates date object for given date string, formatted using given format using given timezone information. Either given timezone, timezone defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. It is allowed to pass valid timezone name as timezone value.
