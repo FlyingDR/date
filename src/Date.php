@@ -89,12 +89,12 @@ final class Date
      *
      * IMPORTANT: Date adjustments should only be used in tests, not in real code!
      */
-    public static function adjust(\DateInterval|\DateTimeInterface|null $now = null): void
+    public static function adjust(\DateInterval|\DateTimeInterface|null $adjustment = null): void
     {
-        if ($now instanceof \DateTimeInterface) {
-            self::$adjustment = (new \DateTimeImmutable())->diff($now);
+        if ($adjustment instanceof \DateTimeInterface) {
+            self::$adjustment = (new \DateTimeImmutable())->diff($adjustment);
         } else {
-            self::$adjustment = $now;
+            self::$adjustment = $adjustment;
         }
         if (self::$adjustment) {
             /**
