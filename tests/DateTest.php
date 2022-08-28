@@ -188,7 +188,7 @@ class DateTest extends TestCase
         $interval = new \DateInterval('PT1H');
         Date::adjust((new \DateTimeImmutable())->add($interval));
         self::assertNotSame($interval, Date::getAdjustment());
-        self::assertEquals($interval, Date::getAdjustment());
+        self::assertIntervalEquals($interval, Date::getAdjustment());
 
         $interval = new \DateInterval('P1DT2H3M4S');
         Date::adjust((new \DateTimeImmutable())->sub($interval));
