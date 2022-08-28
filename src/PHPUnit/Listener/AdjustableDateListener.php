@@ -26,11 +26,11 @@ class AdjustableDateListener implements TestListener
             $ar = $reflection->getAttributes(AdjustableDate::class)[0] ?? null;
             $this->cache[$classKey] = $ar?->newInstance();
         }
-        $methodKey = $test::class . '::' . $test->getName();
+        $method = $test->getName(false);
+        $methodKey = $test::class . '::' . $method;
         if (!array_key_exists($methodKey, $this->cache)) {
             $reflection ??= new \ReflectionObject($test);
             $ar = null;
-            $method = $test->getName();
             if ($reflection->hasMethod($method)) {
                 $ar = $reflection->getMethod($method)->getAttributes(AdjustableDate::class)[0] ?? null;
             }
