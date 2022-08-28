@@ -88,9 +88,32 @@ final class Date
      * Adjust current date by given time shift
      *
      * IMPORTANT: Date adjustments should only be used in tests, not in real code!
+     *
+     * @throws \Exception
      */
-    public static function adjust(\DateInterval|\DateTimeInterface|null $adjustment = null): void
+    public static function adjust(\DateInterval|\DateTimeInterface|string|null $adjustment = null): void
     {
+        if (is_string($adjustment)) {
+            $exception = null;
+            if ($adjustment[0] === 'P') {
+                try {
+                    $adjustment = new \DateInterval($adjustment);
+                } catch (\Exception $e) {
+                    $exception = $e;
+                }
+            }
+            if (is_string($adjustment)) {
+                try {
+                    $adjustment = new \DateTimeImmutable($adjustment);
+                } catch (\Exception $e) {
+                    $exception = $e;
+                }
+            }
+            if (is_string($adjustment)) {
+                $exception ??= new \Exception('Failed to recognize given time shift definition: ' . $adjustment);
+                throw $exception;
+            }
+        }
         if ($adjustment instanceof \DateTimeInterface) {
             self::$adjustment = (new \DateTimeImmutable())->diff($adjustment);
         } else {

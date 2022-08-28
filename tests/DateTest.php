@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 
 declare(strict_types=1);
 
@@ -180,6 +180,63 @@ class DateTest extends TestCase
         self::assertFalse(Date::fromFormat(\DateTimeInterface::ATOM, 'invalid-date'));
     }
 
+    public function testCreatingTimeAdjustmentFromDifferentFormats(): void
+    {
+        Date::adjust();
+        self::assertNull(Date::getAdjustment());
+
+        $interval = new \DateInterval('PT1H');
+        Date::adjust((new \DateTimeImmutable())->add($interval));
+        self::assertNotSame($interval, Date::getAdjustment());
+        self::assertEquals($interval, Date::getAdjustment());
+
+        $interval = new \DateInterval('P1DT2H3M4S');
+        Date::adjust((new \DateTimeImmutable())->sub($interval));
+        self::assertIntervalEquals($interval, Date::getAdjustment());
+
+        Date::adjust($interval);
+        self::assertSame($interval, Date::getAdjustment());
+
+        $interval = 'P1M2DT3H4M';
+        Date::adjust($interval);
+        self::assertIntervalEquals(new \DateInterval($interval), Date::getAdjustment());
+
+        $interval = '2022-08-01 12:23:34';
+        Date::adjust($interval);
+        self::assertIntervalEquals(
+            (\DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $interval))->diff(new \DateTimeImmutable()),
+            Date::getAdjustment(),
+        );
+
+        $interval = '+3 weeks';
+        Date::adjust($interval);
+        self::assertIntervalEquals(new \DateInterval('P3W'), Date::getAdjustment());
+
+        $interval = '-5 days';
+        Date::adjust($interval);
+        $interval = new \DateInterval('P5D');
+        $interval->invert = 1;
+        self::assertIntervalEquals($interval, Date::getAdjustment());
+    }
+
+    /**
+     * @dataProvider dpInvalidIntervalFormatStringsForAdjustmentThrowsException
+     * @throws \Exception
+     */
+    public function testInvalidIntervalFormatStringsForAdjustmentThrowsException(string $adjustment): void
+    {
+        $this->expectException(\Exception::class);
+        Date::adjust($adjustment);
+    }
+
+    public function dpInvalidIntervalFormatStringsForAdjustmentThrowsException(): array
+    {
+        return [
+            ['P1X2Y3Z'],
+            ['invalid relative date definition'],
+        ];
+    }
+
     #[AdjustableDate]
     public function testDateAdjustmentAppliesToPrimaryDateGeneratorMethod(): void
     {
@@ -261,5 +318,10 @@ class DateTest extends TestCase
     private static function assertDateNotEquals(\DateTimeInterface $expected, \DateTimeInterface $actual): void
     {
         self::assertNotEquals($expected->getTimestamp(), $actual->getTimestamp());
+    }
+
+    private static function assertIntervalEquals(\DateInterval $expected, \DateInterval $actual): void
+    {
+        self::assertEquals($expected->format('%Y%M%D%H%I%S'), $actual->format('%Y%M%D%H%I%S'));
     }
 }

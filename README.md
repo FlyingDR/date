@@ -150,10 +150,12 @@ Defines (or resets) timezone that is used for creating date objects. It is allow
 Signature:
 
  ```php
-\Flying\Date\Date::adjust(\DateInterval|\DateTimeInterface|null $adjustment = null): void
+\Flying\Date\Date::adjust(\DateInterval|\DateTimeInterface|string|null $adjustment = null): void
  ```
 
-Defines (or resets) time shifting interval that is used for date adjusting while creating date objects. It is allowed to define either absolute point of time by passing `\DateTimeInterface` instance or a time shift relative to the current point of time by passing `\DateInterval` object.
+Defines (or resets) time shifting interval that is used for date adjusting while creating date objects. It is allowed to define either absolute point of time by passing `\DateTimeInterface` instance or a time shift relative to the current point of time by passing `\DateInterval` object. 
+
+It is also allowed to pass [date formats](https://www.php.net/manual/en/datetime.formats.php) or [date interval](https://www.php.net/manual/en/dateinterval.construct.php) definitions.  
 
 ### `getAdjustment`
 
