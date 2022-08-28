@@ -115,7 +115,16 @@ final class Date
             }
         }
         if ($adjustment instanceof \DateTimeInterface) {
-            self::$adjustment = (new \DateTimeImmutable())->diff($adjustment);
+            $base = new \DateTimeImmutable();
+            $diff = $base->diff($adjustment);
+            /**
+             * It is possible that we have time difference that is slightly less that a second.
+             * Since we're stripping microseconds - it may result in losing whole second of time
+             */
+            if (round($diff->f) === 1.0) {
+                $base = $base->sub(new \DateInterval('PT1S'));
+            }
+            self::$adjustment = $base->diff($adjustment);
         } else {
             self::$adjustment = $adjustment;
         }
