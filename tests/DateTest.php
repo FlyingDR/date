@@ -294,6 +294,18 @@ class DateTest extends TestCase
         self::assertDateEquals(new \DateTimeImmutable(), $now);
     }
 
+    #[AdjustableDate]
+    public function testAdjustedDateAlwaysHaveZeroMicroseconds(): void
+    {
+        Date::adjust('1 minute');
+        // It is necessary to run lots of attempts because it is pretty rare case
+        for ($i = 0; $i < 100; $i++) {
+            $now = Date::now();
+            self::assertEquals('000000', $now->format('u'));
+            usleep(100);
+        }
+    }
+
     private function getReferenceDate(): \DateTimeImmutable
     {
         return \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, '2022-08-01T12:23:34Z', $this->getDefaultTimezone());

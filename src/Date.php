@@ -48,9 +48,17 @@ final class Date
                  *
                  * @see adjust()
                  */
+                $now = $now->add($adjustment);
                 $ms = new \DateInterval('PT0S');
-                $ms->f = (float)('0.' . $now->format('u'));
-                $now = $now->add($adjustment)->sub($ms);
+                /**
+                 * There is relatively small, but still possible chance that after initial
+                 * subtract of the microseconds part resulted object will have 1 microsecond
+                 * instead of zero. It may result into incorrect dates comparison
+                 */
+                do {
+                    $ms->f = (float)('0.' . $now->format('u'));
+                    $now = $now->sub($ms);
+                } while ($now->format('u') !== '000000');
             }
         }
         return $now;
