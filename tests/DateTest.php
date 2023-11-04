@@ -23,7 +23,7 @@ class DateTest extends TestCase
         $default = date_default_timezone_get();
         self::assertEquals($default, Date::getTimezone()->getName());
 
-        $timezone = $this->getNonDefaultTimezone();
+        $timezone = self::getNonDefaultTimezone();
         Date::setTimezone($timezone);
         self::assertNotEquals($default, Date::getTimezone()->getName());
         self::assertEquals($timezone, Date::getTimezone());
@@ -36,12 +36,12 @@ class DateTest extends TestCase
     {
         $now = Date::now();
         self::assertDateEquals(new \DateTimeImmutable(), $now);
-        self::assertEquals($this->getDefaultTimezone(), $now->getTimezone());
+        self::assertEquals(self::getDefaultTimezone(), $now->getTimezone());
 
-        Date::setTimezone($this->getNonDefaultTimezone());
+        Date::setTimezone(self::getNonDefaultTimezone());
         $now = Date::now();
         self::assertDateEquals(new \DateTimeImmutable(), $now);
-        self::assertEquals($this->getNonDefaultTimezone(), $now->getTimezone());
+        self::assertEquals(self::getNonDefaultTimezone(), $now->getTimezone());
     }
 
     public function testCreatingDatesFromDifferentFormats(): void
@@ -75,8 +75,8 @@ class DateTest extends TestCase
     public function testTimezoneAppliesAtTheTimeOfDateCreation(): void
     {
         $date = '2022-08-01T12:23:34Z';
-        $tz1 = $this->getDefaultTimezone();
-        $tz2 = $this->getNonDefaultTimezone();
+        $tz1 = self::getDefaultTimezone();
+        $tz2 = self::getNonDefaultTimezone();
 
         Date::setTimezone($tz1);
         self::assertEquals(
@@ -96,25 +96,25 @@ class DateTest extends TestCase
         $reference = $this->getReferenceDate();
 
         $date = Date::from($reference);
-        self::assertEquals($this->getDefaultTimezone(), $date->getTimezone());
+        self::assertEquals(self::getDefaultTimezone(), $date->getTimezone());
 
-        Date::setTimezone($this->getNonDefaultTimezone());
+        Date::setTimezone(self::getNonDefaultTimezone());
         $date = Date::from($reference);
-        self::assertEquals($this->getNonDefaultTimezone(), $date->getTimezone());
+        self::assertEquals(self::getNonDefaultTimezone(), $date->getTimezone());
 
-        Date::setTimezone($this->getDefaultTimezone()->getName());
+        Date::setTimezone(self::getDefaultTimezone()->getName());
         $date = Date::from($reference);
-        self::assertEquals($this->getDefaultTimezone(), $date->getTimezone());
+        self::assertEquals(self::getDefaultTimezone(), $date->getTimezone());
 
         Date::setTimezone();
         $date = Date::from($reference);
-        self::assertEquals($this->getDefaultTimezone(), $date->getTimezone());
+        self::assertEquals(self::getDefaultTimezone(), $date->getTimezone());
 
-        $timezone = $this->getNonDefaultTimezone();
+        $timezone = self::getNonDefaultTimezone();
         $date = Date::from($reference, $timezone);
         self::assertEquals($timezone, $date->getTimezone());
 
-        $timezone = $this->getNonDefaultTimezone();
+        $timezone = self::getNonDefaultTimezone();
         $date = Date::from($reference, $timezone->getName());
         self::assertEquals($timezone, $date->getTimezone());
     }
@@ -128,7 +128,7 @@ class DateTest extends TestCase
         self::assertEquals($datetime, $created->format($format));
     }
 
-    public function dpDatesFromFormatWithoutTimezone(): array
+    public static function dpDatesFromFormatWithoutTimezone(): array
     {
         return [
             ['Y-m-d', '2022-08-01'],
@@ -146,7 +146,7 @@ class DateTest extends TestCase
         self::assertEquals($timezone, $created->getTimezone());
     }
 
-    public function dpDatesFromFormatWithEmbeddedTimezone(): array
+    public static function dpDatesFromFormatWithEmbeddedTimezone(): array
     {
         return [
             [\DateTimeInterface::ATOM, '2022-08-01T12:23:34-05:00', new \DateTimeZone('-05:00')],
@@ -164,11 +164,11 @@ class DateTest extends TestCase
         self::assertEquals($timezone, $created->getTimezone());
     }
 
-    public function dpDatesFromFormatWithExplicitlyGivenTimezone(): array
+    public static function dpDatesFromFormatWithExplicitlyGivenTimezone(): array
     {
         return [
-            ['Y-m-d H:i:s', '2022-08-01 12:23:34', $this->getDefaultTimezone()],
-            ['Y-m-d H:i:s', '2022-08-01 12:23:34', $this->getNonDefaultTimezone()],
+            ['Y-m-d H:i:s', '2022-08-01 12:23:34', self::getDefaultTimezone()],
+            ['Y-m-d H:i:s', '2022-08-01 12:23:34', self::getNonDefaultTimezone()],
             [\DateTimeInterface::ATOM, '2022-08-01T12:23:34Z', new \DateTimeZone('America/New_York')],
             [\DateTimeInterface::ATOM, '2022-08-01T12:23:34+03:00', new \DateTimeZone('Asia/Singapore')],
         ];
@@ -229,7 +229,7 @@ class DateTest extends TestCase
         Date::adjust($adjustment);
     }
 
-    public function dpInvalidIntervalFormatStringsForAdjustmentThrowsException(): array
+    public static function dpInvalidIntervalFormatStringsForAdjustmentThrowsException(): array
     {
         return [
             ['P1X2Y3Z'],
@@ -298,7 +298,7 @@ class DateTest extends TestCase
     public function testAdjustedDateAlwaysHaveZeroMicroseconds(): void
     {
         Date::adjust('1 minute');
-        // It is necessary to run lots of attempts because it is pretty rare case
+        // It is necessary to run lots of attempts because it is a pretty rare case
         for ($i = 0; $i < 100; $i++) {
             $now = Date::now();
             self::assertEquals('000000', $now->format('u'));
@@ -308,15 +308,15 @@ class DateTest extends TestCase
 
     private function getReferenceDate(): \DateTimeImmutable
     {
-        return \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, '2022-08-01T12:23:34Z', $this->getDefaultTimezone());
+        return \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, '2022-08-01T12:23:34Z', self::getDefaultTimezone());
     }
 
-    private function getDefaultTimezone(): \DateTimeZone
+    private static function getDefaultTimezone(): \DateTimeZone
     {
         return new \DateTimeZone(date_default_timezone_get());
     }
 
-    private function getNonDefaultTimezone(): \DateTimeZone
+    private static function getNonDefaultTimezone(): \DateTimeZone
     {
         $timezone = date_default_timezone_get() !== 'UTC' ? 'UTC' : 'Europe/Moscow';
         return new \DateTimeZone($timezone);
