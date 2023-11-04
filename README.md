@@ -66,14 +66,14 @@ test.
 
 In order to simplify use of the library and to ensure correct enabling / disabling of the date adjustment functionality in tests - it is possible to use `AdjustableDate` PHP attribute.
 
-To enable use of the attribute you need to edit your PHPUnit configuration (`phpunit.xml`) and add test listener:
+To enable use of the attribute you need to edit your PHPUnit configuration (`phpunit.xml`) and add test extension:
 
 ```xml
 
-<listeners>
-    <!-- ... other listeners ... -->
-    <listener class="Flying\Date\PHPUnit\Listener\AdjustableDateListener"/>
-</listeners>
+<extensions>
+   <!-- ... other extensions ... -->
+   <bootstrap class="Flying\Date\PHPUnit\Extension\DateExtension"/>
+</extensions>
 ```
 
 Then for test classes or (preferably) test methods that need to use adjustable date functionality you need to add `#[AdjustableDate]` attribute. It accepts optional configuration parameters:
