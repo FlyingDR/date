@@ -4,27 +4,27 @@
 
 ## Purpose 
 
-Main purpose of the library is to assist testing application in time-sensitive scenarios without need to adjust its code (besides switching to use library itself for creating dates in application). 
+The main purpose of the library is to assist testing application in time-sensitive scenarios without a need to adjust its code (besides switching to use library itself for creating dates in application). 
 
-It is relatively simple to test time-sensitive scenarios for unit tests, but for functional tests it is much harder. Of course, there is plenty of solutions:
+It is relatively simple to test time-sensitive scenarios for unit tests, but for functional tests it is much harder. Of course, there are plenty of solutions:
 
- - [`slope-it/clock-mock`](https://packagist.org/packages/slope-it/clock-mock) looks great, but depends on PHP extension.
+ - [`slope-it/clock-mock`](https://packagist.org/packages/slope-it/clock-mock) looks great, but depends on the PHP extension.
  - [`lcobucci/clock`](https://packagist.org/packages/lcobucci/clock) is very popular, but requires dependency on its own `Clock` object which would require updates of signatures of functions and methods and types of class properties.
  - [Clock mocking](https://symfony.com/doc/current/components/phpunit_bridge.html#clock-mocking) in Symfony's PHPUnit bridge only mocks time-related functions, not `\DateTimeInterface` based classes.
 
-This library aims to keep amount of required changes at a level, comparable with other solutions. Required [updates for the code](#usage-in-application) are listed below and basically limited to change of `\DateTime` constructor methods into call to static method of the different class. It also simplifies testing cases when code execution took some time and this time change used somehow (think of performance tracking as an example).
+This library aims to keep the number of required changes at a level comparable with other solutions. Required [updates for the code](#usage-in-application) are listed below and basically limited to change of `\DateTime` constructor methods into call to static method of the different class. It also simplifies testing cases when code execution took some time and this time change used somehow (think of performance tracking as an example).
 
 ## General information
 
-Whole API is exposed as a single `\Flying\Date\Date` class. API is provided as a set of static methods to make sure that they will be accessible from any part of code without need to introduce any kind of additional dependencies.
+Whole API is exposed as a single `\Flying\Date\Date` class. API is provided as a set of static methods to make sure that they will be accessible from any part of code without a need to introduce any kind of additional dependencies.
 
 Generated date objects are limited to `\DateTimeImmutable`. Upcoming `ClockInterface` from [PSR-20](https://github.com/php-fig/fig-standards/blob/master/proposed/clock.md) also provides only immutable dates.
 
-Main API methods - [`now`](#now) and [`from`](#from) returning `\DateTimeImmutable` instances, whose values can be adjusted relative to the actual current time by providing time shifting interval using [`adjust`](#adjust) method.
+Main API methods - [`now`](#now) and [`from`](#from) returning `\DateTimeImmutable` instances, whose values can be adjusted relative to the actual current time by providing a time shifting interval using [`adjust`](#adjust) method.
 
 ## Usage in application
 
-In order to benefit from the ability to use time shifting it is required to update parts of your code which creates new instances of the `\DateTime` or `\DateTimeInterval` objects.
+In order to benefit from the ability to use time shifting, it is required to update parts of your code which creates new instances of the `\DateTime` or `\DateTimeInterval` objects.
 
 To get `\DateTime` object it is required to convert obtained `\DateTimeInterval` object:
 
@@ -51,7 +51,7 @@ $mutableDateTime = \DateTime::createFromImmutable($immutableDateTime);
 
 ## Usage in tests
 
-In order to test application behavior in different point of time - you need to do two things:
+In order to test application behavior in different points of time, you need to do two things:
 
 1. Provide date adjustment value by calling `\Flying\Date\Date::adjust()` and pass either `\DateTimeInterface` that represents new target date
    or `\DateInterval` to define time shift relatively to the current time. Calling `adjust()` with no arguments removes date adjustment.
@@ -59,7 +59,7 @@ In order to test application behavior in different point of time - you need to d
 
 **IMPORTANT!** You should never use date adjustment in your application's code, ONLY IN TESTS! Use of it in application's code may result in unexpected behavior!
 
-Even in tests you should limit use of this feature to the tests which actually needs date adjustment functionality and disable it after doing the
+Even in tests, you should limit use of this feature to the tests which actually needs date adjustment functionality and disable it after doing the
 test.
 
 ### Simplified configuration using attribute
@@ -83,9 +83,9 @@ Then for test classes or (preferably) test methods that need to use adjustable d
 
 ### Note on microseconds in date adjustment
 
-For time shifting interval and adjusted dates, generated by the [`now`](#now) and [`from`](#from) methods microseconds part of the resulted date is forcibly set to zero. Date objects, which are generated without date adjustment are **not affected**.
+For time shifting interval and adjusted dates, generated by the [`now`](#now) and [`from`](#from) methods microseconds part of the resulted date is forcibly set to zero. Date objects, which are generated without a date adjustment, are **not affected**.
 
-It should be safe because date adjustment is meant to only be used for tests. Testing time shifts with microseconds precision on intervals less than a second is more reliable with use of the `usleep()`. For larger intervals include of microseconds may introduce difference of the whole second which may cause tests to break from time to time.
+It should be safe because date adjustment is meant to only be used for tests. Testing time shifts with microsecond precision on intervals less than a second is more reliable with use of the `usleep()`. For larger intervals include of microseconds may introduce difference of the whole second which may cause tests to break from time to time.
 
 ## API methods
 
@@ -97,7 +97,7 @@ Signature:
 \Flying\Date\Date::now(): \DateTimeImmutable
 ``` 
 
-Provides date object for the current date. Either timezone, defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. 
+Provides the date object for the current date. Either timezone, defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. 
 
 In case if date adjustment is enabled - returned date will be adjusted by the defined time shifting interval.
 
@@ -109,7 +109,7 @@ Signature:
 \Flying\Date\Date::from(\DateTimeInterface|\DateInterval|string $date, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable
  ```
 
-Creates date object for given arbitrary point of time from provided date and timezone information. Either given timezone, timezone defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. It is allowed to pass valid timezone name as timezone value.
+Create the date object for a given arbitrary point of time from provided date and timezone information. Either given timezone, timezone defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. It is allowed to pass valid timezone name as timezone value.
 
 In case if date adjustment is enabled - returned date will be adjusted by the defined time shifting interval.
 
@@ -121,7 +121,7 @@ Signature:
 \Flying\Date\Date::fromFormat(string $format, string $datetime, \DateTimeZone|string|null $timezone = null): \DateTimeImmutable|bool
 ```
 
-Creates date object for given date string, formatted using given format using given timezone information. Either given timezone, timezone defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. It is allowed to pass valid timezone name as timezone value.
+Create the date object for given date string, formatted using given format using given timezone information. Either given timezone, timezone defined through [`setTimezone()`](#settimezone) or PHP default timezone is used. It is allowed to pass valid timezone name as timezone value.
 
 In case if date adjustment is enabled - returned date will be adjusted by the defined time shifting interval.
 
@@ -153,7 +153,7 @@ Signature:
 \Flying\Date\Date::adjust(\DateInterval|\DateTimeInterface|string|null $adjustment = null): void
  ```
 
-Defines (or resets) time shifting interval that is used for date adjusting while creating date objects. It is allowed to define either absolute point of time by passing `\DateTimeInterface` instance or a time shift relative to the current point of time by passing `\DateInterval` object. 
+Defines (or resets) the time shifting interval that is used for date adjusting while creating date objects. It is allowed to define either absolute point of time by passing `\DateTimeInterface` instance or a time shift relative to the current point of time by passing `\DateInterval` object. 
 
 It is also allowed to pass [date formats](https://www.php.net/manual/en/datetime.formats.php) or [date interval](https://www.php.net/manual/en/dateinterval.construct.php) definitions.  
 
@@ -165,7 +165,7 @@ Signature:
 \Flying\Date\Date::getAdjustment(): ?\DateInterval
  ```
 
-Returns currently defined time shifting interval that is used for date adjusting while creating date objects.
+Returns currently defined the time shifting interval that is used for date adjusting while creating date objects.
 
 ### `allowAdjustment`
 

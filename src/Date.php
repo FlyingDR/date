@@ -51,9 +51,11 @@ final class Date
                 $now = $now->add($adjustment);
                 $ms = new \DateInterval('PT0S');
                 /**
-                 * There is relatively small, but still possible chance that after initial
-                 * subtract of the microseconds part resulted object will have 1 microsecond
-                 * instead of zero. It may result into incorrect dates comparison
+                 * There is a relatively small, but still possible chance that after the initial
+                 * subtraction of the microseconds' part resulted object will have 1 microsecond
+                 * instead of zero.
+                 *
+                 * It may result in incorrect dates comparison
                  */
                 do {
                     $ms->f = (float)('0.' . $now->format('u'));
@@ -93,7 +95,7 @@ final class Date
     }
 
     /**
-     * Adjust current date by given time shift
+     * Adjust the current date by given time shift
      *
      * IMPORTANT: Date adjustments should only be used in tests, not in real code!
      *
@@ -126,8 +128,8 @@ final class Date
             $base = new \DateTimeImmutable();
             $diff = $base->diff($adjustment);
             /**
-             * It is possible that we have time difference that is slightly less that a second.
-             * Since we're stripping microseconds - it may result in losing whole second of time
+             * It is possible that we have a time difference that is slightly less that a second.
+             * Since we're stripping microseconds, it may result in losing a whole second of time
              */
             if (round($diff->f) === 1.0) {
                 $base = $base->sub(new \DateInterval('PT1S'));
@@ -140,7 +142,7 @@ final class Date
             /**
              * Strip microseconds part of the date adjustment interval.
              *
-             * It should be safe because testing time shifts with microseconds precision on intervals
+             * It should be safe because testing time shifts with microsecond precision on intervals
              * less than a second is more reliable with use of the usleep() and for larger intervals
              * microseconds include may introduce difference of the whole second which may cause tests
              * to break from time to time.
